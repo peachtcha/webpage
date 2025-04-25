@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扩展建议详情 | 二值神经网络实现指南</title>
+    <style>
+        body { background: #f8fafc; color: #1e293b; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; }
+        .container { max-width: 700px; margin: 3rem auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); padding: 2.5rem 2rem; }
+        h1 { font-size: 2rem; color: #6366f1; margin-bottom: 1.2rem; }
+        .desc { font-size: 1.1rem; color: #475569; margin-bottom: 2rem; }
+        .back { display: inline-block; margin-bottom: 2rem; color: #6366f1; text-decoration: none; font-size: 1rem; }
+        .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        ul { margin: 1rem 0 1.5rem 1.5rem; }
+        li { margin-bottom: 0.7rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back">← 返回主页</a>
+        <div id="ext-content"></div>
+    </div>
+    <script>
+    const extMap = {
+        precision: {
+            icon: '🎯',
+            title: '精度优化',
+            desc: `<p><strong>目标：</strong> 在保证极致压缩和高效推理的同时，最大限度提升二值神经网络的准确率。</p>
+                <ul>
+                    <li><strong>IR-Net方法：</strong> 通过重塑激活分布，使二值化前的特征更适合±1量化，减少信息损失。</li>
+                    <li><strong>比例因子（Scaling Factor）：</strong> 如XNOR-Net，二值权重前乘以实值缩放因子，缩小二值与实值参数的误差。</li>
+                    <li><strong>分布重塑：</strong> 对激活或权重分布进行归一化或中心化，提升二值化后表达能力。</li>
+                    <li><strong>训练技巧：</strong> 采用更强的数据增强、知识蒸馏、温度软化等手段辅助训练。</li>
+                </ul>
+                <p><strong>参考文献：</strong> <a href='https://arxiv.org/abs/1904.02823' target='_blank'>IR-Net: Improving Binarized Neural Networks</a></p>`
+        },
+        deploy: {
+            icon: '🚀',
+            title: '部署应用',
+            desc: `<p><strong>目标：</strong> 让BNN模型高效运行于嵌入式、移动端、NPU等多种硬件平台。</p>
+                <ul>
+                    <li><strong>ONNX Runtime：</strong> 将PyTorch模型导出为ONNX格式，利用ONNX Runtime在多种硬件上高效推理。</li>
+                    <li><strong>TorchScript：</strong> 通过TorchScript将模型序列化，便于C++/移动端等跨平台部署。</li>
+                    <li><strong>硬件适配：</strong> 针对NPU、FPGA等平台优化二值运算，利用bitwise加速。</li>
+                    <li><strong>自动化工具链：</strong> 集成CI/CD流程，实现模型自动导出、测试与部署。</li>
+                </ul>
+                <p><strong>实用链接：</strong> <a href='https://onnxruntime.ai/' target='_blank'>ONNX Runtime</a> | <a href='https://pytorch.org/docs/stable/jit.html' target='_blank'>TorchScript官方文档</a></p>`
+        },
+        advanced: {
+            icon: '🧩',
+            title: '高级特性',
+            desc: `<p><strong>目标：</strong> 进一步提升BNN的泛化能力和实际应用价值。</p>
+                <ul>
+                    <li><strong>知识蒸馏：</strong> 用全精度教师模型指导二值学生模型训练，提升精度。</li>
+                    <li><strong>旋转矩阵（RBNN）：</strong> 在量化前对权重施加旋转变换，减少二值化误差。</li>
+                    <li><strong>多比特量化：</strong> 结合二值与多比特混合量化，兼顾精度与效率。</li>
+                    <li><strong>自适应二值化：</strong> 针对不同层或通道动态选择量化策略。</li>
+                </ul>
+                <p><strong>前沿方向：</strong> 结合神经架构搜索（NAS）、自监督学习等新技术，持续突破BNN性能瓶颈。</p>`
+        }
+    };
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+    const type = getQueryParam('type');
+    const content = extMap[type] || { title: '未知扩展', desc: '<p>未找到对应的扩展建议内容。</p>', icon: '❓' };
+    document.getElementById('ext-content').innerHTML = `
+        <div class="icon">${content.icon}</div>
+        <h1>${content.title}</h1>
+        <div class="desc">${content.desc}</div>
+    `;
+    </script>
+</body>
+</html> 

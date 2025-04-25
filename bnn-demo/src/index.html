@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二值神经网络实现指南 | 高级AI技术</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f43f5e;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.15);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 3rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            padding: 4rem 0 3rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        h2::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--dark);
+            margin: 1.5rem 0 1rem;
+            font-weight: 600;
+        }
+
+        .code-container {
+            position: relative;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .code-header {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            font-family: monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .language-tag {
+            background: var(--primary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        pre {
+            background: #1e1e2e;
+            color: #e2e2e2;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            tab-size: 4;
+            margin: 0;
+        }
+
+        .highlight {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            text-decoration: none !important;
+            text-align: left;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            text-align: left;
+            margin-left: 0;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .feature-card p {
+            text-align: left;
+            margin-left: 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 代码高亮 */
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #6c7986;
+        }
+        .token.punctuation {
+            color: #81A1C1;
+        }
+        .token.property,
+        .token.tag,
+        .token.boolean,
+        .token.number,
+        .token.constant,
+        .token.symbol,
+        .token.deleted {
+            color: #88C0D0;
+        }
+        .token.selector,
+        .token.attr-name,
+        .token.string,
+        .token.char,
+        .token.builtin,
+        .token.inserted {
+            color: #A3BE8C;
+        }
+        .token.operator,
+        .token.entity,
+        .token.url,
+        .language-css .token.string,
+        .style .token.string {
+            color: #81A1C1;
+        }
+        .token.atrule,
+        .token.attr-value,
+        .token.keyword {
+            color: #81A1C1;
+        }
+        .token.function,
+        .token.class-name {
+            color: #88C0D0;
+        }
+        .token.regex,
+        .token.important,
+        .token.variable {
+            color: #EBCB8B;
+        }
+        a[rel~="noopener"][href*="bilibili"]:hover {
+            transform: scale(1.08);
+            box-shadow:0 8px 32px #f43f5e55;
+        }
+        a[rel~="noopener"][href*="bilibili"] span {
+            transition:box-shadow 0.18s;
+        }
+        a[rel~="noopener"][href*="bilibili"]:hover span {
+            box-shadow:0 4px 24px #f43f5e77;
+        }
+        .bili-btn-text {
+            display: inline-block;
+            background: linear-gradient(90deg,#f43f5e 60%,#ffb6d5 100%);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.7rem 2.2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px #f43f5e22;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+            border: none;
+            outline: none;
+        }
+        .bili-btn-text:hover {
+            background: linear-gradient(90deg,#ff7cae 60%,#ffd6e7 100%);
+            color: #fff;
+            transform: scale(1.06);
+            box-shadow: 0 8px 32px #f43f5e55;
+        }
+        #feedback-modal {
+            display: none;
+            opacity: 0;
+            pointer-events: none;
+            position: fixed;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(30,41,59,0.25);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.25s;
+        }
+        #feedback-modal.active {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #feedback-form {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px #6366f122;
+            padding: 2.2rem 2rem;
+            max-width: 350px;
+            width: 90vw;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 0.25s cubic-bezier(.4,2,.6,1), transform 0.25s cubic-bezier(.4,2,.6,1);
+        }
+        #feedback-modal.active #feedback-form {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .feedback-btn {
+            background: linear-gradient(90deg,#22c55e 60%,#86efac 100%) !important;
+            color: #fff !important;
+            box-shadow: 0 4px 16px #22c55e22;
+        }
+        .feedback-btn:hover {
+            background: linear-gradient(90deg,#4ade80 60%,#bbf7d0 100%) !important;
+            color: #fff !important;
+            box-shadow: 0 8px 32px #22c55e55;
+        }
+        /* 回到顶部按钮样式 */
+        #back-to-top {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            #back-to-top {
+                right: 20px;
+                bottom: 20px;
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wrap:wrap;">
+                <h1 style="margin-bottom:0;">二值神经网络实现指南</h1>
+                <div id="ai-bot" style="position:relative;width:60px;height:60px;">
+                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                        <!-- 机器人头部（方形） -->
+                        <rect x="8" y="14" width="44" height="40" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
+                        
+                        <!-- 眼睛（方形） -->
+                        <rect x="18" y="32" width="8" height="10" rx="2" fill="#fff"/>
+                        <rect x="34" y="32" width="8" height="10" rx="2" fill="#fff"/>
+                        <rect x="20" y="35" width="4" height="4" rx="1" fill="#4f46e5"/>
+                        <rect x="36" y="35" width="4" height="4" rx="1" fill="#4f46e5"/>
+                        
+                        <!-- 天线和发光效果（优化） -->
+                        <rect x="28" y="6" width="4" height="8" rx="2" fill="#6366f1"/>
+                        <circle id="antenna-glow" cx="30" cy="6" r="4" fill="#f43f5e" fill-opacity="0.7">
+                            <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="fill-opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- 数字脑波（优化） -->
+                        <g id="digital-waves" opacity="0.8">
+                            <path d="M14,24 L46,24" stroke="#fff" stroke-width="2" stroke-linecap="round">
+                                <animate attributeName="d" 
+                                    dur="1.5s" 
+                                    repeatCount="indefinite"
+                                    values="M14,24 L46,24;
+                                            M14,24 Q30,20 46,24;
+                                            M14,24 Q30,28 46,24;
+                                            M14,24 L46,24"/>
+                            </path>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+            <p class="subtitle">基于PyTorch的轻量化AI解决方案，适用于嵌入式设备部署</p>
+        </header>
+
+        <!-- GitHub 跳转区域 -->
+        <section class="card" style="padding:1.5rem 2rem 1.2rem 2rem;display:flex;align-items:center;gap:1.5rem;justify-content:center;background:rgba(255,255,255,0.95);box-shadow:0 4px 24px #6366f122;">
+            <div style="display:flex;align-items:center;justify-content:center;width:60px;height:60px;background:linear-gradient(135deg,#24292e 60%,#6e7681 100%);border-radius:16px;">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none"><path fill="#fff" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.48 2.87 8.28 6.84 9.63.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.36-3.37-1.36-.45-1.18-1.1-1.5-1.1-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.84c.85.004 1.71.12 2.51.35 1.9-1.33 2.74-1.05 2.74-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .26.18.57.69.48A10.01 10.01 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"/></svg>
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:1.18rem;font-weight:600;color:#24292e;line-height:1.4;">开源项目地址</div>
+                <div style="color:#6e7681;font-size:0.98rem;margin:0.2rem 0 0.7rem 0;word-break:break-all;">欢迎访问和Star本项目的GitHub仓库，获取最新代码与文档。</div>
+                <a href="https://github.com/" target="_blank" rel="noopener" style="display:inline-block;padding:0.5rem 1.5rem;background:linear-gradient(90deg,#24292e 60%,#6e7681 100%);color:#fff;border-radius:8px;font-weight:600;font-size:1rem;text-decoration:none;box-shadow:0 2px 8px #24292e22;transition:background 0.18s,box-shadow 0.18s;">前往 GitHub <svg style="vertical-align:-3px;margin-left:6px;" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7V17" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>核心实现代码</h2>
+            <p>以下Python脚本完整实现了二值神经网络(BNN)的核心功能，包括参数二值化、梯度估计、网络结构设计等关键模块。</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span>BNN_Implementation.py</span>
+                    <span class="language-tag">Python</span>
+                    <button id="copy-btn" style="background:var(--primary);color:#fff;border:none;border-radius:4px;padding:0.3rem 0.8rem;font-size:0.85rem;cursor:pointer;transition:background 0.2s;position:absolute;right:1.2rem;top:0.8rem;z-index:2;">一键复制</button>
+                </div>
+                <pre><code># 环境要求：Python 3.9+ / PyTorch 2.0+ / Windows 11
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, transforms
+
+# 自定义二值化函数（基于直通估计器STE）
+class Binarize(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input):
+        ctx.save_for_backward(input)
+        return torch.sign(input + 1e-20)  # 添加极小值避免零输入
+    
+    @staticmethod
+    def backward(ctx, grad_output):
+        input, = ctx.saved_tensors
+        grad_input = grad_output.clone()
+        grad_input[input > 1] = 0  # 梯度裁剪
+        grad_input[input < -1] = 0
+        return grad_input
+
+# 二值化全连接层
+class BinarizedLinear(nn.Linear):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+    def forward(self, input):
+        # 二值化权重和激活值
+        bin_weight = Binarize.apply(self.weight)
+        bin_input = Binarize.apply(input)
+        return nn.functional.linear(bin_input, bin_weight, self.bias)
+
+# 二值化卷积层
+class BinarizedConv2d(nn.Conv2d):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+    def forward(self, input):
+        bin_weight = Binarize.apply(self.weight)
+        bin_input = Binarize.apply(input)
+        return nn.functional.conv2d(bin_input, bin_weight, self.bias, 
+                                   self.stride, self.padding, self.dilation, 
+                                   self.groups)
+
+# 网络结构定义
+class BNN(nn.Module):
+    def __init__(self):
+        super(BNN, self).__init__()
+        self.features = nn.Sequential(
+            BinarizedConv2d(1, 32, kernel_size=3, padding=1),
+            nn.Hardtanh(inplace=True),
+            nn.MaxPool2d(2),
+            
+            BinarizedConv2d(32, 64, kernel_size=3, padding=1),
+            nn.Hardtanh(inplace=True),
+            nn.MaxPool2d(2)
+        )
+        self.classifier = nn.Sequential(
+            BinarizedLinear(7*7*64, 512),
+            nn.Hardtanh(inplace=True),
+            BinarizedLinear(512, 10)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+# 训练配置
+def train(model, device, train_loader, optimizer, epoch):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = nn.CrossEntropyLoss()(output, target)
+        loss.backward()
+        optimizer.step()
+        if batch_idx % 100 == 0:
+            print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)}]'
+                  f'\tLoss: {loss.item():.6f}')
+
+# 测试函数
+def test(model, device, test_loader):
+    model.eval()
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            pred = output.argmax(dim=1)
+            correct += pred.eq(target).sum().item()
+    accuracy = 100. * correct / len(test_loader.dataset)
+    print(f'Test Accuracy: {accuracy:.2f}%')
+
+# 主程序
+if __name__ == '__main__':
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    # 数据预处理（包含输入二值化）
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,)),
+        lambda x: torch.sign(x)  # 输入二值化
+    ])
+    
+    # 加载MNIST数据集
+    train_dataset = datasets.MNIST('./data', train=True, download=True, transform=transform)
+    test_dataset = datasets.MNIST('./data', train=False, transform=transform)
+    
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1000, shuffle=False)
+
+    # 初始化模型与优化器
+    model = BNN().to(device)
+    optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999))
+    
+    # 训练与测试
+    for epoch in range(1, 11):
+        train(model, device, train_loader, optimizer, epoch)
+        test(model, device, test_loader)</code></pre>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>关键实现解析</h2>
+            <div class="feature-grid">
+                <a class="feature-card" href="feature-explain.html?feature=core" style="text-decoration:none;color:inherit;">
+                    <div class="feature-icon">🧠</div>
+                    <h3>二值化核心机制</h3>
+                    <p>使用Binarize类实现确定性二值化(Sign函数)，前向传播将参数转换为±1，反向传播时通过直通估计器(STE)保留梯度。</p>
+                </a>
+                <a class="feature-card" href="feature-explain.html?feature=structure" style="text-decoration:none;color:inherit;">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>网络结构设计</h3>
+                    <p>采用VGG式堆叠结构，使用BinarizedConv2d和BinarizedLinear替代传统层，激活函数使用Hardtanh限制输出范围[-1,1]。</p>
+                </a>
+                <a class="feature-card" href="feature-explain.html?feature=training" style="text-decoration:none;color:inherit;">
+                    <div class="feature-icon">⚡</div>
+                    <h3>训练优化策略</h3>
+                    <p>使用Adam优化器平衡梯度更新稳定性，采用交叉熵损失函数，与LogSoftmax输出层配合，每个epoch后测试模型准确率。</p>
+                </a>
+                <a class="feature-card" href="feature-explain.html?feature=hardware" style="text-decoration:none;color:inherit;">
+                    <div class="feature-icon">🚀</div>
+                    <h3>硬件加速支持</h3>
+                    <p>自动检测CUDA设备优先使用GPU加速计算，二值化参数通过位运算优化，理论计算速度可提升58倍。</p>
+                </a>
+                <a class="feature-card" href="feature-explain.html?feature=performance" style="text-decoration:none;color:inherit;">
+                    <div class="feature-icon">📊</div>
+                    <h3>性能表现</h3>
+                    <p>在MNIST数据集上可实现约95%的测试准确率，模型大小压缩为原浮点模型的约1/32。</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>网站链接</h2>
+            <div style="margin:2rem 0;display:flex;gap:2rem;flex-wrap:wrap;">
+                <a href="https://www.bilibili.com/" target="_blank" rel="noopener" class="bili-btn-text">Bilibili</a>
+                <a href="https://github.com/" target="_blank" rel="noopener" class="bili-btn-text" style="background:linear-gradient(90deg,#24292e 60%,#6e7681 100%);">GitHub</a>
+                <a href="https://www.bing.com/" target="_blank" rel="noopener" class="bili-btn-text" style="background:linear-gradient(90deg,#0085ff 60%,#00e0ff 100%);">必应</a>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>扩展建议</h2>
+            <div class="feature-grid" style="margin-bottom:0;">
+                <a class="feature-card" href="extension-detail.html?type=precision" style="min-width:200px;text-align:center;">
+                    <div class="feature-icon">🎯</div>
+                    <h3>精度优化</h3>
+                    <p>提升BNN准确率，减少量化误差，参考IR-Net/XNOR等方法。</p>
+                </a>
+                <a class="feature-card" href="extension-detail.html?type=deploy" style="min-width:200px;text-align:center;">
+                    <div class="feature-icon">🚀</div>
+                    <h3>部署应用</h3>
+                    <p>ONNX/TorchScript导出，NPU/FPGA等硬件高效推理。</p>
+                </a>
+                <a class="feature-card" href="extension-detail.html?type=advanced" style="min-width:200px;text-align:center;">
+                    <div class="feature-icon">🧩</div>
+                    <h3>高级特性</h3>
+                    <p>知识蒸馏、旋转矩阵、多比特量化等前沿技术。</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="card" id="feedback-section">
+            <h2>用户反馈</h2>
+            <a href="feedback.html" class="bili-btn-text feedback-btn" style="margin-top:0.5rem;display:inline-block;">填写意见表单</a>
+        </section>
+
+        <div class="footer">
+            <p>最后更新时间为2025-04-25 ，星期五</p>
+        </div>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <button id="back-to-top" aria-label="回到顶部">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 15l-6-6-6 6"/>
+        </svg>
+    </button>
+
+    <script>
+        // 卡片滚动动画
+        const cards = document.querySelectorAll('.card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        cards.forEach(card => {
+            observer.observe(card);
+        });
+
+        // 代码一键复制功能
+        const copyBtn = document.getElementById('copy-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                const code = copyBtn.parentElement.parentElement.querySelector('pre code').innerText;
+                navigator.clipboard.writeText(code).then(() => {
+                    copyBtn.textContent = '已复制!';
+                    setTimeout(() => { copyBtn.textContent = '一键复制'; }, 1200);
+                });
+            });
+        }
+
+        document.getElementById('fb-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                nickname: form.nickname.value,
+                contact: form.contact.value,
+                advice: form.advice.value
+            };
+            try {
+                await fetch('http://localhost:3000/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                document.getElementById('fb-success').style.display = 'block';
+                setTimeout(function(){ window.location.href = 'index.html'; }, 1500);
+            } catch (err) {
+                alert('提交失败，请稍后重试');
+            }
+        };
+
+        // 回到顶部功能
+        const backToTop = document.getElementById('back-to-top');
+        
+        // 监听滚动事件
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        
+        // 点击回到顶部
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+    
+    <!-- 引入回到顶部按钮脚本 -->
+    <script src="back-to-top.js"></script>
+</body>
+</html>

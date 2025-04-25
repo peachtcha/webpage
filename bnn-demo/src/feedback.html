@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>意见反馈 | 二值神经网络实现指南</title>
+    <style>
+        body { background: #f8fafc; color: #1e293b; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; }
+        .container { max-width: 800px; margin: 4rem auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); padding: 2.5rem 2rem; }
+        h1, h2 { font-size: 1.6rem; color: #6366f1; margin-bottom: 1.2rem; text-align:center; }
+        h2 { font-size: 1.4rem; margin-top: 2rem; }
+        form { display: flex; flex-direction: column; gap: 1.2rem; max-width: 400px; margin: 0 auto; }
+        input, textarea { padding: 0.7rem 1rem; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 1rem; }
+        textarea { min-height: 80px; }
+        .btns { display: flex; gap: 1rem; justify-content: flex-end; }
+        button { background: var(--primary,#6366f1); color: #fff; padding: 0.5rem 1.2rem; border-radius: 6px; border: none; cursor: pointer; font-size: 1rem; }
+        .cancel { background: #e5e7eb; color: #475569; }
+        .success { color: #4f46e5; text-align:center; margin-top:1.2rem; }
+        a.back { display:inline-block; color:#6366f1; margin-bottom:1.5rem; text-decoration:none; }
+        
+        /* 表格样式 */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .data-table th, .data-table td { 
+            padding: 0.75rem; 
+            text-align: left; 
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table th { 
+            background: #f8fafc;
+            font-weight: 600;
+            color: #4f46e5;
+        }
+        .data-table tr:hover { background: #f8fafc; }
+        
+        /* 分隔线 */
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 2rem 0;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: none;
+            text-align: center;
+            color: #6366f1;
+            margin: 1rem 0;
+        }
+        
+        /* 按钮容器 */
+        .action-btns {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        /* 查看数据按钮 */
+        .view-data-btn {
+            background: linear-gradient(90deg,#22c55e 60%,#86efac 100%);
+        }
+        .view-data-btn:hover {
+            background: linear-gradient(90deg,#4ade80 60%,#bbf7d0 100%);
+        }
+        
+        /* 下载按钮 */
+        .download-btn {
+            background: linear-gradient(90deg,#0ea5e9 60%,#7dd3fc 100%);
+        }
+        .download-btn:hover {
+            background: linear-gradient(90deg,#38bdf8 60%,#bae6fd 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back">← 返回主页</a>
+        <h1>意见反馈</h1>
+        <form id="fb-form">
+            <input name="nickname" type="text" placeholder="昵称（可选）">
+            <input name="contact" type="text" placeholder="联系方式（可选）">
+            <textarea name="advice" placeholder="您的意见或建议..." required></textarea>
+            <div class="btns">
+                <button type="button" class="cancel" onclick="window.location.href='index.html'">取消</button>
+                <button type="submit">提交</button>
+            </div>
+        </form>
+        <div id="fb-success" class="success" style="display:none;">感谢您的反馈！即将返回主页...</div>
+
+        <div class="divider"></div>
+
+        <h2>历史反馈记录</h2>
+        <div class="action-btns">
+            <button class="view-data-btn" onclick="loadFeedbackData()">查看反馈数据</button>
+            <button class="download-btn" onclick="downloadCSV()">下载Excel表格</button>
+        </div>
+        <div id="loading" class="loading">加载中...</div>
+        <div id="data-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>昵称</th>
+                        <th>联系方式</th>
+                        <th>反馈内容</th>
+                        <th>提交时间</th>
+                    </tr>
+                </thead>
+                <tbody id="feedback-data">
+                    <!-- 数据将通过JavaScript动态插入 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+    // 提交表单
+    document.getElementById('fb-form').onsubmit = async function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            nickname: form.nickname.value,
+            contact: form.contact.value,
+            advice: form.advice.value
+        };
+        try {
+            await fetch('http://localhost:3000/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            document.getElementById('fb-success').style.display = 'block';
+            setTimeout(function(){ window.location.href = 'index.html'; }, 1500);
+        } catch (err) {
+            alert('提交失败，请稍后重试');
+        }
+    };
+
+    // 加载反馈数据
+    async function loadFeedbackData() {
+        const loading = document.getElementById('loading');
+        const tbody = document.getElementById('feedback-data');
+        
+        loading.style.display = 'block';
+        tbody.innerHTML = '';
+        
+        try {
+            const response = await fetch('http://localhost:3000/api/feedback');
+            const data = await response.json();
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.nickname || '-'}</td>
+                    <td>${item.contact || '-'}</td>
+                    <td>${item.advice}</td>
+                    <td>${new Date(item.date).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            alert('加载数据失败，请确保服务器已启动');
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    // 下载CSV文件
+    async function downloadCSV() {
+        try {
+            window.location.href = 'http://localhost:3000/api/feedback/download';
+        } catch (err) {
+            alert('下载失败，请确保服务器已启动');
+        }
+    }
+    </script>
+</body>
+</html> 

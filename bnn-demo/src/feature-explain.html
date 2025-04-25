@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>功能解析 | 二值神经网络实现指南</title>
+    <style>
+        body { background: #f8fafc; color: #1e293b; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; }
+        .container { max-width: 700px; margin: 3rem auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); padding: 2.5rem 2rem; }
+        h1 { font-size: 2rem; color: #6366f1; margin-bottom: 1.2rem; }
+        .desc { font-size: 1.1rem; color: #475569; margin-bottom: 2rem; }
+        .back { display: inline-block; margin-bottom: 2rem; color: #6366f1; text-decoration: none; font-size: 1rem; }
+        .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back">← 返回主页</a>
+        <div id="feature-content"></div>
+    </div>
+    <script>
+    // 功能解释内容
+    const featureMap = {
+        core: {
+            icon: '🧠',
+            title: '二值化核心机制',
+            desc: `<p><strong>原理简介：</strong><br>二值化神经网络（BNN）的核心在于将权重和激活值限制为+1或-1。通过自定义的Binarize类，前向传播时采用Sign函数将输入映射为±1，极大减少了模型的存储和计算需求。反向传播则采用直通估计器（STE），允许梯度在不可导点近似传递，从而保证网络可训练。</p>
+            <p><strong>技术细节：</strong><br>BNN的二值化操作会带来信息损失，因此通常配合Hardtanh等激活函数限制数值范围，减少量化误差。STE的引入是BNN可训练的关键创新。</p>
+            <p><strong>应用场景：</strong><br>适用于对模型体积和推理速度有极高要求的场景，如移动端、嵌入式设备、物联网终端等。</p>
+            <p><strong>优势与注意事项：</strong><br>优势在于极致压缩和高效推理，但二值化会带来一定精度损失，需结合网络结构和训练技巧优化。</p>`
+        },
+        structure: {
+            icon: '🛠️',
+            title: '网络结构设计',
+            desc: `<p><strong>结构特点：</strong><br>本BNN采用类似VGG的堆叠式结构，卷积层和全连接层均用自定义的二值化版本（BinarizedConv2d/BinarizedLinear）替代。激活函数选用Hardtanh，输出范围严格限制在[-1,1]，有助于后续二值化。</p>
+            <p><strong>技术细节：</strong><br>每个卷积/全连接层后紧跟Hardtanh，最大程度减少量化误差。网络深度和宽度可根据任务灵活调整。</p>
+            <p><strong>应用建议：</strong><br>适合图像分类、目标检测等任务。对于更复杂任务，可引入残差结构或注意力机制。</p>
+            <p><strong>设计优势：</strong><br>结构简洁，便于硬件实现和后续优化。</p>`
+        },
+        training: {
+            icon: '⚡',
+            title: '训练优化策略',
+            desc: `<p><strong>优化方法：</strong><br>采用Adam优化器，兼顾收敛速度和稳定性。损失函数选用交叉熵，适合多分类任务。训练过程中每个epoch后进行测试，实时监控模型性能。</p>
+            <p><strong>技术细节：</strong><br>输入数据同样进行二值化预处理，保证训练和推理一致性。可结合学习率衰减、数据增强等策略进一步提升效果。</p>
+            <p><strong>注意事项：</strong><br>二值网络对超参数较为敏感，建议多尝试不同学习率、批量大小等配置。</p>
+            <p><strong>进阶技巧：</strong><br>可引入知识蒸馏、分布重塑等方法提升精度。</p>`
+        },
+        hardware: {
+            icon: '🚀',
+            title: '硬件加速支持',
+            desc: `<p><strong>加速原理：</strong><br>BNN模型自动检测CUDA设备，优先使用GPU加速。二值化参数可通过位运算（如XNOR、bitcount）实现高效推理，理论上可达58倍加速。</p>
+            <p><strong>应用场景：</strong><br>适合部署在NPU、FPGA、嵌入式GPU等硬件上，极大提升推理速度和能效比。</p>
+            <p><strong>技术细节：</strong><br>可通过ONNX/TorchScript导出模型，配合硬件推理引擎部署。二值化权重和激活可直接映射为bit流，便于硬件实现。</p>
+            <p><strong>注意事项：</strong><br>不同硬件对bit运算支持程度不同，需根据目标平台优化实现。</p>`
+        },
+        performance: {
+            icon: '📊',
+            title: '性能表现',
+            desc: `<p><strong>实验结果：</strong><br>在MNIST数据集上，BNN可实现约95%的测试准确率，模型大小仅为原始浮点模型的1/32，推理速度大幅提升。</p>
+            <p><strong>优势分析：</strong><br>极致压缩和高效推理使BNN非常适合资源受限场景。即使在更复杂数据集上，合理设计和训练也能取得较好效果。</p>
+            <p><strong>对比分析：</strong><br>与全精度网络相比，BNN在精度略有下降的前提下，获得了数量级的存储和速度优势。</p>
+            <p><strong>优化建议：</strong><br>可结合分布重塑、比例因子、知识蒸馏等方法进一步提升精度。</p>`
+        }
+    };
+    // 获取URL参数
+    function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+    const feature = getQueryParam('feature');
+    const content = featureMap[feature] || { title: '未知功能', desc: '<p>未找到对应的功能解释。</p>', icon: '❓' };
+    document.getElementById('feature-content').innerHTML = `
+        <div class="icon">${content.icon}</div>
+        <h1>${content.title}</h1>
+        <div class="desc">${content.desc}</div>
+    `;
+    </script>
+</body>
+</html> 
