@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNN小游戏 | 二值神经网络体验</title>
+    <style>
+        body { background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%); color: #1e293b; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; }
+        .container { max-width: 900px; margin: 3rem auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); padding: 2.5rem 2rem; }
+        h1 { font-size: 2.2rem; color: #f59e42; margin-bottom: 1.2rem; text-align:center; }
+        .desc { font-size: 1.1rem; color: #475569; margin-bottom: 2rem; text-align:center; }
+        .game-area { display: flex; flex-direction: column; align-items: center; }
+        #bnn-canvas { background: #f8fafc; border: 2px solid #fbbf24; border-radius: 12px; margin-bottom: 1.5rem; }
+        .controls { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; justify-content:center; }
+        .controls label { font-weight: 600; color: #f59e42; }
+        .controls input, .controls select { padding: 0.3rem 0.7rem; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 1rem; }
+        .btn { background: linear-gradient(90deg,#fbbf24 60%,#f59e42 100%); color: #fff; border: none; border-radius: 6px; padding: 0.5rem 1.2rem; font-size: 1rem; cursor: pointer; margin-left: 1rem; }
+        .btn:hover { background: linear-gradient(90deg,#f59e42 60%,#fbbf24 100%); }
+        .result { margin-top: 1.2rem; font-size: 1.1rem; color: #f59e42; text-align:center; }
+        .back { display: inline-block; margin-bottom: 2rem; color: #f59e42; text-decoration: none; font-size: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back">← 返回主页</a>
+        <h1>BNN小游戏</h1>
+        <div class="desc">点击下方按钮，调整网络结构，体验二值神经网络的变化！</div>
+        <div class="game-area" style="flex-direction:column;align-items:center;gap:1.2rem;">
+            <canvas id="bnn-canvas" width="600" height="300"></canvas>
+            <div class="controls">
+                <label>层数：<input type="number" id="layer-count" min="1" max="5" value="3"></label>
+                <label>激活函数：
+                    <select id="activation">
+                        <option value="sign">Sign(±1)</option>
+                        <option value="hardtanh">HardTanh</option>
+                    </select>
+                </label>
+                <button class="btn" id="randomize">随机权重</button>
+            </div>
+            <div class="result" id="game-result">点击"随机权重"或调整参数，观察网络输出！</div>
+            <div id="explain-area" style="width:100%;max-width:700px;background:#f8fafc;border-radius:12px;padding:1.2rem 1rem;margin-top:1.2rem;box-shadow:0 2px 12px #fbbf2422;">
+                <h3 style="color:#f59e42;margin-top:0;margin-bottom:0.5rem;font-size:1.15rem;">网络结构与解释</h3>
+                <div id="explain-content" style="font-size:1.02rem;color:#475569;line-height:1.7;"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+    // 简单BNN可视化与交互
+    const canvas = document.getElementById('bnn-canvas');
+    const ctx = canvas.getContext('2d');
+    const layerInput = document.getElementById('layer-count');
+    const activationInput = document.getElementById('activation');
+    const randomizeBtn = document.getElementById('randomize');
+    const resultDiv = document.getElementById('game-result');
+
+    let layers = 3;
+    let activation = 'sign';
+    let weights = [];
+
+    function randomWeights() {
+        weights = [];
+        for(let l=0; l<layers; l++) {
+            // 每层4个神经元，权重±1
+            let layerW = [];
+            for(let i=0; i<4; i++) {
+                let neuronW = [];
+                for(let j=0; j<4; j++) {
+                    neuronW.push(Math.random() > 0.5 ? 1 : -1);
+                }
+                layerW.push(neuronW);
+            }
+            weights.push(layerW);
+        }
+    }
+
+    function drawNetwork() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const nodeR = 18;
+        const layerGap = canvas.width/(layers+1);
+        const nodeGap = canvas.height/5;
+        // 画节点
+        for(let l=0; l<layers; l++) {
+            for(let n=0; n<4; n++) {
+                let x = layerGap*(l+1);
+                let y = nodeGap*(n+1);
+                ctx.beginPath();
+                ctx.arc(x, y, nodeR, 0, 2*Math.PI);
+                ctx.fillStyle = '#fbbf24';
+                ctx.globalAlpha = 0.85;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = '#f59e42';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(n+1, x, y);
+            }
+        }
+        // 画权重线
+        for(let l=0; l<layers-1; l++) {
+            for(let n1=0; n1<4; n1++) {
+                for(let n2=0; n2<4; n2++) {
+                    let x1 = layerGap*(l+1);
+                    let y1 = nodeGap*(n1+1);
+                    let x2 = layerGap*(l+2);
+                    let y2 = nodeGap*(n2+1);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.strokeStyle = weights[l][n2][n1] === 1 ? '#22c55e' : '#ef4444';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.7;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+            }
+        }
+    }
+
+    function forward(input) {
+        let x = input.slice();
+        for(let l=0; l<layers; l++) {
+            let out = [];
+            for(let n=0; n<4; n++) {
+                let sum = 0;
+                for(let j=0; j<4; j++) sum += x[j]*weights[l][n][j];
+                if(activation === 'sign') out.push(sum>=0?1:-1);
+                else out.push(Math.max(-1, Math.min(1, sum/4)));
+            }
+            x = out;
+        }
+        return x;
+    }
+
+    function getExplainHTML(input, output) {
+        // 权重统计
+        let wStats = weights.map((layer, idx) => {
+            let flat = layer.flat();
+            let pos = flat.filter(x=>x===1).length;
+            let neg = flat.filter(x=>x===-1).length;
+            return `第${idx+1}层：+1有${pos}个，-1有${neg}个`;
+        }).join('<br>');
+        let actDesc = activation === 'sign' ?
+            'Sign(±1)：输出仅为+1或-1，极致二值化，推理速度快但信息损失较大。' :
+            'HardTanh：输出范围[-1,1]，可保留部分信息，兼顾精度与效率。';
+        return `
+        <b>当前层数：</b> ${layers} 层<br>
+        <b>激活函数：</b> ${activation === 'sign' ? 'Sign(±1)' : 'HardTanh'}<br>
+        <span style="color:#f59e42;">${actDesc}</span><br><br>
+        <b>每层权重分布：</b><br>${wStats}<br><br>
+        <b>输入：</b> [${input.join(', ')}]<br>
+        <b>输出：</b> <span style="color:#22c55e;font-weight:600;">[${output.join(', ')}]</span><br><br>
+        <b>解释：</b><br>
+        本小游戏模拟了一个多层二值神经网络（BNN），所有权重和激活值均为±1（或[-1,1]）。你可以通过调整层数、激活函数和权重，观察网络输出的变化，直观理解BNN的工作原理。绿色线代表权重为+1，红色线为-1。
+        `;
+    }
+
+    function updateGame() {
+        drawNetwork();
+        let input = [1,-1,1,-1];
+        let output = forward(input);
+        resultDiv.innerHTML = `输入：[1, -1, 1, -1] <br> 输出：<b>[${output.join(', ')}]</b>`;
+        document.getElementById('explain-content').innerHTML = getExplainHTML(input, output);
+    }
+
+    layerInput.oninput = function() {
+        layers = parseInt(this.value);
+        randomWeights();
+        updateGame();
+    };
+    activationInput.onchange = function() {
+        activation = this.value;
+        updateGame();
+    };
+    randomizeBtn.onclick = function() {
+        randomWeights();
+        updateGame();
+    };
+
+    // 初始化
+    randomWeights();
+    updateGame();
+    </script>
+</body>
+</html> 
