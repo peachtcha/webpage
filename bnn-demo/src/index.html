@@ -389,69 +389,105 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div style="display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wrap:wrap;">
-                <h1 style="margin-bottom:0;">二值神经网络实现指南</h1>
-                <div id="ai-bot" style="position:relative;width:60px;height:60px;">
-                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                        <!-- 机器人头部（方形） -->
-                        <rect x="8" y="14" width="44" height="40" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
-                        
-                        <!-- 眼睛（方形） -->
-                        <rect x="18" y="32" width="8" height="10" rx="2" fill="#fff"/>
-                        <rect x="34" y="32" width="8" height="10" rx="2" fill="#fff"/>
-                        <rect x="20" y="35" width="4" height="4" rx="1" fill="#4f46e5"/>
-                        <rect x="36" y="35" width="4" height="4" rx="1" fill="#4f46e5"/>
-                        
-                        <!-- 天线和发光效果（优化） -->
-                        <rect x="28" y="6" width="4" height="8" rx="2" fill="#6366f1"/>
-                        <circle id="antenna-glow" cx="30" cy="6" r="4" fill="#f43f5e" fill-opacity="0.7">
-                            <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
-                            <animate attributeName="fill-opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                        
-                        <!-- 数字脑波（优化） -->
-                        <g id="digital-waves" opacity="0.8">
-                            <path d="M14,24 L46,24" stroke="#fff" stroke-width="2" stroke-linecap="round">
-                                <animate attributeName="d" 
-                                    dur="1.5s" 
-                                    repeatCount="indefinite"
-                                    values="M14,24 L46,24;
-                                            M14,24 Q30,20 46,24;
-                                            M14,24 Q30,28 46,24;
-                                            M14,24 L46,24"/>
-                            </path>
-                        </g>
-                    </svg>
+    <!-- 个人空间入口 - 简化为纯链接方式 -->
+    <a href="profile.html" style="position:fixed;top:1.2rem;right:1.5rem;z-index:100000;cursor:pointer;display:block;text-decoration:none;">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6366f1 60%,#4f46e5 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #6366f122;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#fff"/><path d="M4 20c0-3.3137 3.134-6 7-6s7 2.6863 7 6" fill="#fff"/></svg>
+        </div>
+    </a>
+    
+    <!-- 登录/注册弹窗 -->
+    <div id="auth-modal" style="position:fixed;z-index:99999;left:0;top:0;width:100vw;height:100vh;background:rgba(30,41,59,0.18);display:flex;align-items:center;justify-content:center;">
+        <div id="auth-box" style="background:#fff;border-radius:16px;box-shadow:0 8px 32px #6366f122;padding:2.2rem 2rem;min-width:320px;width:90vw;max-width:350px;display:flex;flex-direction:column;gap:1.2rem;">
+            <h2 id="auth-title" style="margin-bottom:0.5rem;text-align:center;">用户登录</h2>
+            <form id="login-form" style="display:flex;flex-direction:column;gap:1rem;">
+                <input id="login-username" type="text" placeholder="用户名" required autocomplete="username" style="padding:0.7rem 1rem;border-radius:8px;border:1px solid #e5e7eb;">
+                <input id="login-password" type="password" placeholder="密码" required autocomplete="current-password" style="padding:0.7rem 1rem;border-radius:8px;border:1px solid #e5e7eb;">
+                <label style="font-size:0.98rem;color:#555;"><input type="checkbox" id="remember-me" style="margin-right:0.5em;">记住密码</label>
+                <button type="submit" style="background:linear-gradient(90deg,#6366f1 60%,#4f46e5 100%);color:#fff;border:none;border-radius:8px;padding:0.7rem 0;font-weight:600;font-size:1.1rem;">登录</button>
+            </form>
+            <div style="text-align:center;font-size:0.98rem;">
+                没有账号？<a href="#" id="show-register" style="color:#6366f1;text-decoration:underline;">注册</a>
+            </div>
+            <div id="auth-msg" style="color:#f43f5e;text-align:center;font-size:0.98rem;display:none;"></div>
+        </div>
+        <div id="register-box" style="display:none;background:#fff;border-radius:16px;box-shadow:0 8px 32px #6366f122;padding:2.2rem 2rem;min-width:320px;width:90vw;max-width:350px;flex-direction:column;gap:1.2rem;">
+            <h2 style="margin-bottom:0.5rem;text-align:center;">用户注册</h2>
+            <form id="register-form" style="display:flex;flex-direction:column;gap:1rem;">
+                <input id="register-username" type="text" placeholder="用户名" required autocomplete="username" style="padding:0.7rem 1rem;border-radius:8px;border:1px solid #e5e7eb;">
+                <input id="register-password" type="password" placeholder="密码" required autocomplete="new-password" style="padding:0.7rem 1rem;border-radius:8px;border:1px solid #e5e7eb;">
+                <button type="submit" style="background:linear-gradient(90deg,#22c55e 60%,#86efac 100%);color:#fff;border:none;border-radius:8px;padding:0.7rem 0;font-weight:600;font-size:1.1rem;">注册</button>
+            </form>
+            <div style="text-align:center;font-size:0.98rem;">
+                已有账号？<a href="#" id="show-login" style="color:#6366f1;text-decoration:underline;">返回登录</a>
+            </div>
+            <div id="register-msg" style="color:#f43f5e;text-align:center;font-size:0.98rem;display:none;"></div>
+        </div>
+    </div>
+    <div id="main-content" style="display:none;">
+        <div class="container">
+            <header>
+                <div style="display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wrap:wrap;">
+                    <h1 style="margin-bottom:0;">二值神经网络实现指南</h1>
+                    <div id="ai-bot" style="position:relative;width:60px;height:60px;">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                            <!-- 机器人头部（方形） -->
+                            <rect x="8" y="14" width="44" height="40" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
+                            
+                            <!-- 眼睛（方形） -->
+                            <rect x="18" y="32" width="8" height="10" rx="2" fill="#fff"/>
+                            <rect x="34" y="32" width="8" height="10" rx="2" fill="#fff"/>
+                            <rect x="20" y="35" width="4" height="4" rx="1" fill="#4f46e5"/>
+                            <rect x="36" y="35" width="4" height="4" rx="1" fill="#4f46e5"/>
+                            
+                            <!-- 天线和发光效果（优化） -->
+                            <rect x="28" y="6" width="4" height="8" rx="2" fill="#6366f1"/>
+                            <circle id="antenna-glow" cx="30" cy="6" r="4" fill="#f43f5e" fill-opacity="0.7">
+                                <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+                                <animate attributeName="fill-opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            
+                            <!-- 数字脑波（优化） -->
+                            <g id="digital-waves" opacity="0.8">
+                                <path d="M14,24 L46,24" stroke="#fff" stroke-width="2" stroke-linecap="round">
+                                    <animate attributeName="d" 
+                                        dur="1.5s" 
+                                        repeatCount="indefinite"
+                                        values="M14,24 L46,24;
+                                                M14,24 Q30,20 46,24;
+                                                M14,24 Q30,28 46,24;
+                                                M14,24 L46,24"/>
+                                </path>
+                            </g>
+                        </svg>
+                    </div>
                 </div>
-            </div>
-            <p class="subtitle">基于PyTorch的轻量化AI解决方案，适用于嵌入式设备部署</p>
-        </header>
+                <p class="subtitle">基于PyTorch的轻量化AI解决方案，适用于嵌入式设备部署</p>
+            </header>
 
-        <!-- GitHub 跳转区域 -->
-        <section class="card" style="padding:1.5rem 2rem 1.2rem 2rem;display:flex;align-items:center;gap:1.5rem;justify-content:center;background:rgba(255,255,255,0.95);box-shadow:0 4px 24px #6366f122;">
-            <div style="display:flex;align-items:center;justify-content:center;width:60px;height:60px;background:linear-gradient(135deg,#24292e 60%,#6e7681 100%);border-radius:16px;">
-                <svg width="38" height="38" viewBox="0 0 24 24" fill="none"><path fill="#fff" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.48 2.87 8.28 6.84 9.63.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.36-3.37-1.36-.45-1.18-1.1-1.5-1.1-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.84c.85.004 1.71.12 2.51.35 1.9-1.33 2.74-1.05 2.74-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .26.18.57.69.48A10.01 10.01 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-                <div style="font-size:1.18rem;font-weight:600;color:#24292e;line-height:1.4;">开源项目地址</div>
-                <div style="color:#6e7681;font-size:0.98rem;margin:0.2rem 0 0.7rem 0;word-break:break-all;">欢迎访问和Star本项目的GitHub仓库，获取最新代码与文档。</div>
-                <a href="https://github.com/" target="_blank" rel="noopener" style="display:inline-block;padding:0.5rem 1.5rem;background:linear-gradient(90deg,#24292e 60%,#6e7681 100%);color:#fff;border-radius:8px;font-weight:600;font-size:1rem;text-decoration:none;box-shadow:0 2px 8px #24292e22;transition:background 0.18s,box-shadow 0.18s;">前往 GitHub <svg style="vertical-align:-3px;margin-left:6px;" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7V17" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-            </div>
-        </section>
-
-        <section class="card">
-            <h2>核心实现代码</h2>
-            <p>以下Python脚本完整实现了二值神经网络(BNN)的核心功能，包括参数二值化、梯度估计、网络结构设计等关键模块。</p>
-            
-            <div class="code-container">
-                <div class="code-header">
-                    <span>BNN_Implementation.py</span>
-                    <span class="language-tag">Python</span>
-                    <button id="copy-btn" style="background:var(--primary);color:#fff;border:none;border-radius:4px;padding:0.3rem 0.8rem;font-size:0.85rem;cursor:pointer;transition:background 0.2s;position:absolute;right:1.2rem;top:0.8rem;z-index:2;">一键复制</button>
+            <!-- GitHub 跳转区域 -->
+            <section class="card" style="padding:1.5rem 2rem 1.2rem 2rem;display:flex;align-items:center;gap:1.5rem;justify-content:center;background:rgba(255,255,255,0.95);box-shadow:0 4px 24px #6366f122;">
+                <div style="display:flex;align-items:center;justify-content:center;width:60px;height:60px;background:linear-gradient(135deg,#24292e 60%,#6e7681 100%);border-radius:16px;">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none"><path fill="#fff" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.48 2.87 8.28 6.84 9.63.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.36-3.37-1.36-.45-1.18-1.1-1.5-1.1-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.84c.85.004 1.71.12 2.51.35 1.9-1.33 2.74-1.05 2.74-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .26.18.57.69.48A10.01 10.01 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"/></svg>
                 </div>
-                <pre><code># 环境要求：Python 3.9+ / PyTorch 2.0+ / Windows 11
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:1.18rem;font-weight:600;color:#24292e;line-height:1.4;">开源项目地址</div>
+                    <div style="color:#6e7681;font-size:0.98rem;margin:0.2rem 0 0.7rem 0;word-break:break-all;">欢迎访问和Star本项目的GitHub仓库，获取最新代码与文档。</div>
+                    <a href="https://github.com/peachtcha/webpage.git" target="_blank" rel="noopener" style="display:inline-block;padding:0.5rem 1.5rem;background:linear-gradient(90deg,#24292e 60%,#6e7681 100%);color:#fff;border-radius:8px;font-weight:600;font-size:1rem;text-decoration:none;box-shadow:0 2px 8px #24292e22;transition:background 0.18s,box-shadow 0.18s;">前往 GitHub <svg style="vertical-align:-3px;margin-left:6px;" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H7M17 7V17" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>核心实现代码</h2>
+                <p>以下Python脚本完整实现了二值神经网络(BNN)的核心功能，包括参数二值化、梯度估计、网络结构设计等关键模块。</p>
+                
+                <div class="code-container">
+                    <div class="code-header">
+                        <span>BNN_Implementation.py</span>
+                        <span class="language-tag">Python</span>
+                        <button id="copy-btn" style="background:var(--primary);color:#fff;border:none;border-radius:4px;padding:0.3rem 0.8rem;font-size:0.85rem;cursor:pointer;transition:background 0.2s;position:absolute;right:1.2rem;top:0.8rem;z-index:2;">一键复制</button>
+                    </div>
+                    <pre><code># 环境要求：Python 3.9+ / PyTorch 2.0+ / Windows 11
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -573,88 +609,189 @@ if __name__ == '__main__':
     for epoch in range(1, 11):
         train(model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)</code></pre>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>关键实现解析</h2>
+                <div class="feature-grid">
+                    <a class="feature-card" href="feature-explain.html?feature=core" style="text-decoration:none;color:inherit;">
+                        <div class="feature-icon">🧠</div>
+                        <h3>二值化核心机制</h3>
+                        <p>使用Binarize类实现确定性二值化(Sign函数)，前向传播将参数转换为±1，反向传播时通过直通估计器(STE)保留梯度。</p>
+                    </a>
+                    <a class="feature-card" href="feature-explain.html?feature=structure" style="text-decoration:none;color:inherit;">
+                        <div class="feature-icon">🛠️</div>
+                        <h3>网络结构设计</h3>
+                        <p>采用VGG式堆叠结构，使用BinarizedConv2d和BinarizedLinear替代传统层，激活函数使用Hardtanh限制输出范围[-1,1]。</p>
+                    </a>
+                    <a class="feature-card" href="feature-explain.html?feature=training" style="text-decoration:none;color:inherit;">
+                        <div class="feature-icon">⚡</div>
+                        <h3>训练优化策略</h3>
+                        <p>使用Adam优化器平衡梯度更新稳定性，采用交叉熵损失函数，与LogSoftmax输出层配合，每个epoch后测试模型准确率。</p>
+                    </a>
+                    <a class="feature-card" href="feature-explain.html?feature=hardware" style="text-decoration:none;color:inherit;">
+                        <div class="feature-icon">🚀</div>
+                        <h3>硬件加速支持</h3>
+                        <p>自动检测CUDA设备优先使用GPU加速计算，二值化参数通过位运算优化，理论计算速度可提升58倍。</p>
+                    </a>
+                    <a class="feature-card" href="feature-explain.html?feature=performance" style="text-decoration:none;color:inherit;">
+                        <div class="feature-icon">📊</div>
+                        <h3>性能表现</h3>
+                        <p>在MNIST数据集上可实现约95%的测试准确率，模型大小压缩为原浮点模型的约1/32。</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>网站链接</h2>
+                <div style="margin:2rem 0;display:flex;gap:2rem;flex-wrap:wrap;">
+                    <a href="https://www.bilibili.com/" target="_blank" rel="noopener" class="bili-btn-text">Bilibili</a>
+                    <a href="https://github.com" target="_blank" rel="noopener" class="bili-btn-text" style="background:linear-gradient(90deg,#24292e 60%,#6e7681 100%);">GitHub</a>
+                    <a href="https://www.bing.com/" target="_blank" rel="noopener" class="bili-btn-text" style="background:linear-gradient(90deg,#0085ff 60%,#00e0ff 100%);">必应</a>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>扩展建议</h2>
+                <div class="feature-grid" style="margin-bottom:0;">
+                    <a class="feature-card" href="extension-detail.html?type=precision" style="min-width:200px;text-align:center;">
+                        <div class="feature-icon">🎯</div>
+                        <h3>精度优化</h3>
+                        <p>提升BNN准确率，减少量化误差，参考IR-Net/XNOR等方法。</p>
+                    </a>
+                    <a class="feature-card" href="extension-detail.html?type=deploy" style="min-width:200px;text-align:center;">
+                        <div class="feature-icon">🚀</div>
+                        <h3>部署应用</h3>
+                        <p>ONNX/TorchScript导出，NPU/FPGA等硬件高效推理。</p>
+                    </a>
+                    <a class="feature-card" href="extension-detail.html?type=advanced" style="min-width:200px;text-align:center;">
+                        <div class="feature-icon">🧩</div>
+                        <h3>高级特性</h3>
+                        <p>知识蒸馏、旋转矩阵、多比特量化等前沿技术。</p>
+                    </a>
+                </div>
+            </section>
+
+            <section class="card" id="feedback-section">
+                <h2>用户反馈</h2>
+                <a href="feedback.html" class="bili-btn-text feedback-btn" style="margin-top:0.5rem;display:inline-block;">填写意见表单</a>
+            </section>
+
+            <div class="footer">
+                <p>最后更新时间为2025-04-25 ，星期五</p>
             </div>
-        </section>
-
-        <section class="card">
-            <h2>关键实现解析</h2>
-            <div class="feature-grid">
-                <a class="feature-card" href="feature-explain.html?feature=core" style="text-decoration:none;color:inherit;">
-                    <div class="feature-icon">🧠</div>
-                    <h3>二值化核心机制</h3>
-                    <p>使用Binarize类实现确定性二值化(Sign函数)，前向传播将参数转换为±1，反向传播时通过直通估计器(STE)保留梯度。</p>
-                </a>
-                <a class="feature-card" href="feature-explain.html?feature=structure" style="text-decoration:none;color:inherit;">
-                    <div class="feature-icon">🛠️</div>
-                    <h3>网络结构设计</h3>
-                    <p>采用VGG式堆叠结构，使用BinarizedConv2d和BinarizedLinear替代传统层，激活函数使用Hardtanh限制输出范围[-1,1]。</p>
-                </a>
-                <a class="feature-card" href="feature-explain.html?feature=training" style="text-decoration:none;color:inherit;">
-                    <div class="feature-icon">⚡</div>
-                    <h3>训练优化策略</h3>
-                    <p>使用Adam优化器平衡梯度更新稳定性，采用交叉熵损失函数，与LogSoftmax输出层配合，每个epoch后测试模型准确率。</p>
-                </a>
-                <a class="feature-card" href="feature-explain.html?feature=hardware" style="text-decoration:none;color:inherit;">
-                    <div class="feature-icon">🚀</div>
-                    <h3>硬件加速支持</h3>
-                    <p>自动检测CUDA设备优先使用GPU加速计算，二值化参数通过位运算优化，理论计算速度可提升58倍。</p>
-                </a>
-                <a class="feature-card" href="feature-explain.html?feature=performance" style="text-decoration:none;color:inherit;">
-                    <div class="feature-icon">📊</div>
-                    <h3>性能表现</h3>
-                    <p>在MNIST数据集上可实现约95%的测试准确率，模型大小压缩为原浮点模型的约1/32。</p>
-                </a>
-            </div>
-        </section>
-
-        <section class="card">
-            <h2>网站链接</h2>
-            <div style="margin:2rem 0;display:flex;gap:2rem;flex-wrap:wrap;">
-                <a href="https://www.bilibili.com/" target="_blank" rel="noopener" class="bili-btn-text">Bilibili</a>
-                <a href="https://github.com/" target="_blank" rel="noopener" class="bili-btn-text" style="background:linear-gradient(90deg,#24292e 60%,#6e7681 100%);">GitHub</a>
-                <a href="https://www.bing.com/" target="_blank" rel="noopener" class="bili-btn-text" style="background:linear-gradient(90deg,#0085ff 60%,#00e0ff 100%);">必应</a>
-            </div>
-        </section>
-
-        <section class="card">
-            <h2>扩展建议</h2>
-            <div class="feature-grid" style="margin-bottom:0;">
-                <a class="feature-card" href="extension-detail.html?type=precision" style="min-width:200px;text-align:center;">
-                    <div class="feature-icon">🎯</div>
-                    <h3>精度优化</h3>
-                    <p>提升BNN准确率，减少量化误差，参考IR-Net/XNOR等方法。</p>
-                </a>
-                <a class="feature-card" href="extension-detail.html?type=deploy" style="min-width:200px;text-align:center;">
-                    <div class="feature-icon">🚀</div>
-                    <h3>部署应用</h3>
-                    <p>ONNX/TorchScript导出，NPU/FPGA等硬件高效推理。</p>
-                </a>
-                <a class="feature-card" href="extension-detail.html?type=advanced" style="min-width:200px;text-align:center;">
-                    <div class="feature-icon">🧩</div>
-                    <h3>高级特性</h3>
-                    <p>知识蒸馏、旋转矩阵、多比特量化等前沿技术。</p>
-                </a>
-            </div>
-        </section>
-
-        <section class="card" id="feedback-section">
-            <h2>用户反馈</h2>
-            <a href="feedback.html" class="bili-btn-text feedback-btn" style="margin-top:0.5rem;display:inline-block;">填写意见表单</a>
-        </section>
-
-        <div class="footer">
-            <p>最后更新时间为2025-04-25 ，星期五</p>
         </div>
+
+        <!-- 回到顶部按钮 -->
+        <button id="back-to-top" aria-label="回到顶部">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 15l-6-6-6 6"/>
+            </svg>
+        </button>
     </div>
 
-    <!-- 回到顶部按钮 -->
-    <button id="back-to-top" aria-label="回到顶部">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 15l-6-6-6 6"/>
-        </svg>
-    </button>
-
     <script>
+        // 直接在脚本开始处检查登录状态并显示对应内容
+        (function() {
+            // 第一时间检查登录状态并显示相应内容
+            const hasRememberUser = localStorage.getItem('rememberUser') !== null;
+            const hasSession = sessionStorage.getItem('loggedIn') === 'true';
+            
+            console.log('立即检查登录状态:', { hasRememberUser, hasSession });
+            
+            if(hasRememberUser || hasSession) {
+                console.log('已登录，直接显示主内容');
+                document.getElementById('auth-modal').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+            } else {
+                console.log('未登录，显示登录界面');
+                document.getElementById('auth-modal').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'none';
+            }
+        })();
+
+        // 登录/注册逻辑
+        (function(){
+            // 默认账户
+            if(!localStorage.getItem('users')){
+                localStorage.setItem('users', JSON.stringify({admin:'12345'}));
+            }
+            const authModal = document.getElementById('auth-modal');
+            const mainContent = document.getElementById('main-content');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const showRegister = document.getElementById('show-register');
+            const showLogin = document.getElementById('show-login');
+            const authMsg = document.getElementById('auth-msg');
+            const registerMsg = document.getElementById('register-msg');
+            const authBox = document.getElementById('auth-box');
+            const registerBox = document.getElementById('register-box');
+            // 记住密码
+            const rememberMe = document.getElementById('remember-me');
+            // 自动填充
+            if(localStorage.getItem('rememberUser')){
+                const {username, password} = JSON.parse(localStorage.getItem('rememberUser'));
+                document.getElementById('login-username').value = username;
+                document.getElementById('login-password').value = password;
+                rememberMe.checked = true;
+            }
+            // 登录
+            loginForm.onsubmit = function(e){
+                e.preventDefault();
+                const username = document.getElementById('login-username').value.trim();
+                const password = document.getElementById('login-password').value;
+                const users = JSON.parse(localStorage.getItem('users'));
+                if(users[username] && users[username] === password){
+                    if(rememberMe.checked){
+                        localStorage.setItem('rememberUser', JSON.stringify({username,password}));
+                    }else{
+                        // 使用会话存储，确保值为字符串'true'
+                        sessionStorage.setItem('loggedIn', 'true');
+                    }
+                    authModal.style.display = 'none';
+                    mainContent.style.display = 'block';
+                }else{
+                    authMsg.textContent = '用户名或密码错误';
+                    authMsg.style.display = 'block';
+                }
+            };
+            // 注册
+            registerForm.onsubmit = function(e){
+                e.preventDefault();
+                const username = document.getElementById('register-username').value.trim();
+                const password = document.getElementById('register-password').value;
+                let users = JSON.parse(localStorage.getItem('users'));
+                if(users[username]){
+                    registerMsg.textContent = '用户名已存在';
+                    registerMsg.style.display = 'block';
+                    return;
+                }
+                users[username] = password;
+                localStorage.setItem('users', JSON.stringify(users));
+                registerMsg.style.color = '#22c55e';
+                registerMsg.textContent = '注册成功，请登录';
+                setTimeout(()=>{
+                    registerBox.style.display = 'none';
+                    authBox.style.display = 'flex';
+                    registerMsg.style.display = 'none';
+                }, 1200);
+            };
+            // 切换注册/登录
+            showRegister.onclick = function(e){
+                e.preventDefault();
+                authBox.style.display = 'none';
+                registerBox.style.display = 'flex';
+                authMsg.style.display = 'none';
+            };
+            showLogin.onclick = function(e){
+                e.preventDefault();
+                registerBox.style.display = 'none';
+                authBox.style.display = 'flex';
+                registerMsg.style.display = 'none';
+            };
+        })();
+
         // 卡片滚动动画
         const cards = document.querySelectorAll('.card');
         
@@ -724,6 +861,26 @@ if __name__ == '__main__':
                 behavior: 'smooth'
             });
         });
+
+        // 增加window.onload保障页面完全加载后检查依然正确
+        window.onload = function() {
+            console.log('页面完全加载，做最后检查');
+            // 如果两个区域都不显示，强制检查登录状态
+            const mainContent = document.getElementById('main-content');
+            const authModal = document.getElementById('auth-modal');
+            
+            if(getComputedStyle(mainContent).display === 'none' && getComputedStyle(authModal).display === 'none') {
+                console.log('检测到异常状态(两个区域都不可见)，重新检查登录状态');
+                
+                if(localStorage.getItem('rememberUser') || sessionStorage.getItem('loggedIn') === 'true') {
+                    mainContent.style.display = 'block';
+                    authModal.style.display = 'none';
+                } else {
+                    mainContent.style.display = 'none';
+                    authModal.style.display = 'flex';
+                }
+            }
+        };
     </script>
     
     <!-- 引入回到顶部按钮脚本 -->
