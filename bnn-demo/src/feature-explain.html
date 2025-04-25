@@ -24,42 +24,140 @@
         core: {
             icon: '🧠',
             title: '二值化核心机制',
-            desc: `<p><strong>原理简介：</strong><br>二值化神经网络（BNN）的核心在于将权重和激活值限制为+1或-1。通过自定义的Binarize类，前向传播时采用Sign函数将输入映射为±1，极大减少了模型的存储和计算需求。反向传播则采用直通估计器（STE），允许梯度在不可导点近似传递，从而保证网络可训练。</p>
-            <p><strong>技术细节：</strong><br>BNN的二值化操作会带来信息损失，因此通常配合Hardtanh等激活函数限制数值范围，减少量化误差。STE的引入是BNN可训练的关键创新。</p>
-            <p><strong>应用场景：</strong><br>适用于对模型体积和推理速度有极高要求的场景，如移动端、嵌入式设备、物联网终端等。</p>
-            <p><strong>优势与注意事项：</strong><br>优势在于极致压缩和高效推理，但二值化会带来一定精度损失，需结合网络结构和训练技巧优化。</p>`
+            desc: `
+            <p><strong>原理简介：</strong><br>
+            二值化神经网络（BNN）的核心在于将权重和激活值限制为+1或-1。通过自定义的Binarize类，前向传播时采用Sign函数将输入映射为±1，极大减少了模型的存储和计算需求。反向传播则采用直通估计器（STE），允许梯度在不可导点近似传递，从而保证网络可训练。</p>
+            <p><strong>技术细节：</strong><br>
+            <ul>
+                <li>权重/激活二值化：<span style="color:#6366f1">w ∈ {+1, -1}</span>，<span style="color:#6366f1">a ∈ {+1, -1}</span></li>
+                <li>STE（Straight-Through Estimator）原理：<br>
+                    <span style="background:#f8fafc;padding:2px 6px;border-radius:4px;">forward: y = sign(x)</span><br>
+                    <span style="background:#f8fafc;padding:2px 6px;border-radius:4px;">backward: dy/dx ≈ 1(|x|≤1)</span>
+                </li>
+                <li>常用激活函数：Sign、HardTanh</li>
+            </ul>
+            </p>
+            <p><strong>经典论文与资料：</strong><br>
+                <a href="https://arxiv.org/abs/1602.02830" target="_blank">Binarized Neural Networks (BNN)</a> &nbsp;|&nbsp;
+                <a href="https://arxiv.org/abs/1603.05279" target="_blank">XNOR-Net: ImageNet Classification Using Binary Convolutional Neural Networks</a> &nbsp;|&nbsp;
+                <a href="https://zhuanlan.zhihu.com/p/266134324" target="_blank">知乎科普：二值神经网络原理</a>
+            </p>
+            <p><strong>应用案例：</strong><br>
+            <ul>
+                <li>嵌入式AI芯片（如Kendryte K210）上的超低功耗推理</li>
+                <li>移动端实时图像识别</li>
+                <li>物联网终端的边缘智能</li>
+            </ul>
+            </p>
+            <p><strong>图示：</strong><br>
+                <span style="font-family:monospace;font-size:1.1em;">输入 → <b>Sign</b> → ±1 → <b>二值卷积/全连接</b> → 输出</span>
+            </p>
+            <p style="color:#6366f1;font-size:0.98em;">二值化极大压缩模型体积，推理速度提升10~50倍，但需注意精度损失。</p>
+            `
         },
         structure: {
             icon: '🛠️',
             title: '网络结构设计',
-            desc: `<p><strong>结构特点：</strong><br>本BNN采用类似VGG的堆叠式结构，卷积层和全连接层均用自定义的二值化版本（BinarizedConv2d/BinarizedLinear）替代。激活函数选用Hardtanh，输出范围严格限制在[-1,1]，有助于后续二值化。</p>
-            <p><strong>技术细节：</strong><br>每个卷积/全连接层后紧跟Hardtanh，最大程度减少量化误差。网络深度和宽度可根据任务灵活调整。</p>
-            <p><strong>应用建议：</strong><br>适合图像分类、目标检测等任务。对于更复杂任务，可引入残差结构或注意力机制。</p>
-            <p><strong>设计优势：</strong><br>结构简洁，便于硬件实现和后续优化。</p>`
+            desc: `
+            <p><strong>结构特点：</strong><br>
+            本BNN采用类似VGG的堆叠式结构，卷积层和全连接层均用自定义的二值化版本（BinarizedConv2d/BinarizedLinear）替代。激活函数选用Hardtanh，输出范围严格限制在[-1,1]，有助于后续二值化。</p>
+            <ul>
+                <li>每层后紧跟HardTanh，减少量化误差</li>
+                <li>可引入残差结构（如BinaryResNet）提升表达力</li>
+                <li>支持多比特量化混合（如DoReFa-Net）</li>
+            </ul>
+            <p><strong>经典论文与资料：</strong><br>
+                <a href="https://arxiv.org/abs/1602.02830" target="_blank">Binarized Neural Networks</a> &nbsp;|&nbsp;
+                <a href="https://arxiv.org/abs/1707.07170" target="_blank">DoReFa-Net: Training Low Bitwidth CNNs</a> &nbsp;|&nbsp;
+                <a href="https://arxiv.org/abs/1708.04788" target="_blank">Bi-Real Net: Enhancing the Performance of 1-bit CNNs</a>
+            </p>
+            <p><strong>应用案例：</strong><br>
+                <ul>
+                    <li>图像分类（如CIFAR-10、ImageNet）</li>
+                    <li>目标检测（如YOLO-BNN）</li>
+                </ul>
+            </p>
+            <p><strong>结构示意：</strong><br>
+                <span style="font-family:monospace;">输入 → [二值卷积+HardTanh] × N → 展平 → [二值全连接+HardTanh] × M → 输出</span>
+            </p>
+            `
         },
         training: {
             icon: '⚡',
             title: '训练优化策略',
-            desc: `<p><strong>优化方法：</strong><br>采用Adam优化器，兼顾收敛速度和稳定性。损失函数选用交叉熵，适合多分类任务。训练过程中每个epoch后进行测试，实时监控模型性能。</p>
-            <p><strong>技术细节：</strong><br>输入数据同样进行二值化预处理，保证训练和推理一致性。可结合学习率衰减、数据增强等策略进一步提升效果。</p>
-            <p><strong>注意事项：</strong><br>二值网络对超参数较为敏感，建议多尝试不同学习率、批量大小等配置。</p>
-            <p><strong>进阶技巧：</strong><br>可引入知识蒸馏、分布重塑等方法提升精度。</p>`
+            desc: `
+            <p><strong>优化方法：</strong><br>
+            采用Adam优化器，兼顾收敛速度和稳定性。损失函数选用交叉熵，适合多分类任务。训练过程中每个epoch后进行测试，实时监控模型性能。</p>
+            <ul>
+                <li>数据增强（如Cutout、Mixup）提升泛化</li>
+                <li>知识蒸馏辅助二值网络训练</li>
+                <li>分布重塑、比例因子等提升精度</li>
+            </ul>
+            <p><strong>经典论文与资料：</strong><br>
+                <a href="https://arxiv.org/abs/1904.02823" target="_blank">IR-Net: Improving Binarized Neural Networks</a> &nbsp;|&nbsp;
+                <a href="https://arxiv.org/abs/1512.03385" target="_blank">Distilling the Knowledge in a Neural Network</a> &nbsp;|&nbsp;
+                <a href="https://pytorch.org/docs/stable/optim.html" target="_blank">PyTorch官方优化器文档</a>
+            </p>
+            <p><strong>应用案例：</strong><br>
+                <ul>
+                    <li>工业缺陷检测中的高效模型训练</li>
+                    <li>边缘设备的快速模型迭代</li>
+                </ul>
+            </p>
+            `
         },
         hardware: {
             icon: '🚀',
             title: '硬件加速支持',
-            desc: `<p><strong>加速原理：</strong><br>BNN模型自动检测CUDA设备，优先使用GPU加速。二值化参数可通过位运算（如XNOR、bitcount）实现高效推理，理论上可达58倍加速。</p>
-            <p><strong>应用场景：</strong><br>适合部署在NPU、FPGA、嵌入式GPU等硬件上，极大提升推理速度和能效比。</p>
-            <p><strong>技术细节：</strong><br>可通过ONNX/TorchScript导出模型，配合硬件推理引擎部署。二值化权重和激活可直接映射为bit流，便于硬件实现。</p>
-            <p><strong>注意事项：</strong><br>不同硬件对bit运算支持程度不同，需根据目标平台优化实现。</p>`
+            desc: `
+            <p><strong>加速原理：</strong><br>
+            BNN模型自动检测CUDA设备，优先使用GPU加速。二值化参数可通过位运算（如XNOR、bitcount）实现高效推理，理论上可达58倍加速。</p>
+            <ul>
+                <li>XNOR/AND/OR等位运算替代浮点乘法</li>
+                <li>支持FPGA/NPU/嵌入式GPU等多平台</li>
+                <li>ONNX/TorchScript导出便于跨平台部署</li>
+            </ul>
+            <p><strong>经典论文与资料：</strong><br>
+                <a href="https://arxiv.org/abs/1603.05279" target="_blank">XNOR-Net: ImageNet Classification Using Binary Convolutional Neural Networks</a> &nbsp;|&nbsp;
+                <a href="https://onnxruntime.ai/" target="_blank">ONNX Runtime</a> &nbsp;|&nbsp;
+                <a href="https://pytorch.org/docs/stable/jit.html" target="_blank">TorchScript官方文档</a>
+            </p>
+            <p><strong>应用案例：</strong><br>
+                <ul>
+                    <li>智能摄像头的本地人脸识别</li>
+                    <li>FPGA加速的实时视频分析</li>
+                </ul>
+            </p>
+            <p><strong>加速示意：</strong><br>
+                <span style="font-family:monospace;">二值输入 ⊕ 二值权重 → bitcount → 累加 → 输出</span>
+            </p>
+            `
         },
         performance: {
             icon: '📊',
             title: '性能表现',
-            desc: `<p><strong>实验结果：</strong><br>在MNIST数据集上，BNN可实现约95%的测试准确率，模型大小仅为原始浮点模型的1/32，推理速度大幅提升。</p>
-            <p><strong>优势分析：</strong><br>极致压缩和高效推理使BNN非常适合资源受限场景。即使在更复杂数据集上，合理设计和训练也能取得较好效果。</p>
-            <p><strong>对比分析：</strong><br>与全精度网络相比，BNN在精度略有下降的前提下，获得了数量级的存储和速度优势。</p>
-            <p><strong>优化建议：</strong><br>可结合分布重塑、比例因子、知识蒸馏等方法进一步提升精度。</p>`
+            desc: `
+            <p><strong>实验结果：</strong><br>
+            在MNIST数据集上，BNN可实现约95%的测试准确率，模型大小仅为原始浮点模型的1/32，推理速度大幅提升。</p>
+            <ul>
+                <li>ImageNet上XNOR-Net精度可达51.2%</li>
+                <li>模型体积压缩10~32倍</li>
+                <li>推理速度提升10~50倍</li>
+            </ul>
+            <p><strong>经典论文与资料：</strong><br>
+                <a href="https://arxiv.org/abs/1603.05279" target="_blank">XNOR-Net论文</a> &nbsp;|&nbsp;
+                <a href="https://paperswithcode.com/task/binarized-neural-networks" target="_blank">Papers With Code: Binarized Neural Networks</a>
+            </p>
+            <p><strong>应用案例：</strong><br>
+                <ul>
+                    <li>移动端手写数字识别</li>
+                    <li>超低功耗物联网终端</li>
+                </ul>
+            </p>
+            <p><strong>性能对比图示：</strong><br>
+                <span style="font-family:monospace;">浮点模型(32MB) → <b>BNN(1MB)</b>，推理速度提升数十倍</span>
+            </p>
+            `
         }
     };
     // 获取URL参数
