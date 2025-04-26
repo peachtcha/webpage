@@ -11,6 +11,23 @@
         .desc { font-size: 1.1rem; color: #475569; margin-bottom: 2rem; }
         .back { display: inline-block; margin-bottom: 2rem; color: #6366f1; text-decoration: none; font-size: 1rem; }
         .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .feature-img {
+            display: block;
+            margin: 1.5rem auto 0.5rem auto;
+            max-width: 95%;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px #6366f122;
+        }
+        .img-caption {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.98rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 1.2rem 0.5rem; }
+            h1 { font-size: 1.3rem; }
+        }
     </style>
 </head>
 <body>
@@ -25,22 +42,24 @@
             icon: '🧠',
             title: '二值化核心机制',
             desc: `
+            <img class=\"feature-img\" src=\"images/bnn_jay.png\" alt=\"BNN结构示意图\">
+            <div class=\"img-caption\">图：二值神经网络（BNN）结构与二值化流程（本地图片）</div>
             <p><strong>原理简介：</strong><br>
             二值化神经网络（BNN）的核心在于将权重和激活值限制为+1或-1。通过自定义的Binarize类，前向传播时采用Sign函数将输入映射为±1，极大减少了模型的存储和计算需求。反向传播则采用直通估计器（STE），允许梯度在不可导点近似传递，从而保证网络可训练。</p>
             <p><strong>技术细节：</strong><br>
             <ul>
-                <li>权重/激活二值化：<span style="color:#6366f1">w ∈ {+1, -1}</span>，<span style="color:#6366f1">a ∈ {+1, -1}</span></li>
+                <li>权重/激活二值化：<span style=\"color:#6366f1\">w ∈ {+1, -1}</span>，<span style=\"color:#6366f1\">a ∈ {+1, -1}</span></li>
                 <li>STE（Straight-Through Estimator）原理：<br>
-                    <span style="background:#f8fafc;padding:2px 6px;border-radius:4px;">forward: y = sign(x)</span><br>
-                    <span style="background:#f8fafc;padding:2px 6px;border-radius:4px;">backward: dy/dx ≈ 1(|x|≤1)</span>
+                    <span style=\"background:#f8fafc;padding:2px 6px;border-radius:4px;\">forward: y = sign(x)</span><br>
+                    <span style=\"background:#f8fafc;padding:2px 6px;border-radius:4px;\">backward: dy/dx ≈ 1(|x|≤1)</span>
                 </li>
                 <li>常用激活函数：Sign、HardTanh</li>
             </ul>
             </p>
             <p><strong>经典论文与资料：</strong><br>
-                <a href="https://arxiv.org/abs/1602.02830" target="_blank">Binarized Neural Networks (BNN)</a> &nbsp;|&nbsp;
-                <a href="https://arxiv.org/abs/1603.05279" target="_blank">XNOR-Net: ImageNet Classification Using Binary Convolutional Neural Networks</a> &nbsp;|&nbsp;
-                <a href="https://zhuanlan.zhihu.com/p/266134324" target="_blank">知乎科普：二值神经网络原理</a>
+                <a href=\"https://arxiv.org/abs/1602.02830\" target=\"_blank\">Binarized Neural Networks (BNN)</a> &nbsp;|&nbsp;
+                <a href=\"https://arxiv.org/abs/1603.05279\" target=\"_blank\">XNOR-Net: ImageNet Classification Using Binary Convolutional Neural Networks</a> &nbsp;|&nbsp;
+                <a href=\"https://zhuanlan.zhihu.com/p/266134324\" target=\"_blank\">知乎科普：二值神经网络原理</a>
             </p>
             <p><strong>应用案例：</strong><br>
             <ul>
@@ -50,15 +69,17 @@
             </ul>
             </p>
             <p><strong>图示：</strong><br>
-                <span style="font-family:monospace;font-size:1.1em;">输入 → <b>Sign</b> → ±1 → <b>二值卷积/全连接</b> → 输出</span>
+                <span style=\"font-family:monospace;font-size:1.1em;\">输入 → <b>Sign</b> → ±1 → <b>二值卷积/全连接</b> → 输出</span>
             </p>
-            <p style="color:#6366f1;font-size:0.98em;">二值化极大压缩模型体积，推理速度提升10~50倍，但需注意精度损失。</p>
+            <p style=\"color:#6366f1;font-size:0.98em;\">二值化极大压缩模型体积，推理速度提升10~50倍，但需注意精度损失。</p>
             `
         },
         structure: {
             icon: '🛠️',
             title: '网络结构设计',
             desc: `
+            <img class=\"feature-img\" src=\"images/binarynet-arch.png\" alt=\"BNN网络结构示意\">
+            <div class=\"img-caption\">图：典型BNN网络结构（本地图片）</div>
             <p><strong>结构特点：</strong><br>
             本BNN采用类似VGG的堆叠式结构，卷积层和全连接层均用自定义的二值化版本（BinarizedConv2d/BinarizedLinear）替代。激活函数选用Hardtanh，输出范围严格限制在[-1,1]，有助于后续二值化。</p>
             <ul>
@@ -67,9 +88,9 @@
                 <li>支持多比特量化混合（如DoReFa-Net）</li>
             </ul>
             <p><strong>经典论文与资料：</strong><br>
-                <a href="https://arxiv.org/abs/1602.02830" target="_blank">Binarized Neural Networks</a> &nbsp;|&nbsp;
-                <a href="https://arxiv.org/abs/1707.07170" target="_blank">DoReFa-Net: Training Low Bitwidth CNNs</a> &nbsp;|&nbsp;
-                <a href="https://arxiv.org/abs/1708.04788" target="_blank">Bi-Real Net: Enhancing the Performance of 1-bit CNNs</a>
+                <a href=\"https://arxiv.org/abs/1602.02830\" target=\"_blank\">Binarized Neural Networks</a> &nbsp;|&nbsp;
+                <a href=\"https://arxiv.org/abs/1707.07170\" target=\"_blank\">DoReFa-Net: Training Low Bitwidth CNNs</a> &nbsp;|&nbsp;
+                <a href=\"https://arxiv.org/abs/1708.04788\" target=\"_blank\">Bi-Real Net: Enhancing the Performance of 1-bit CNNs</a>
             </p>
             <p><strong>应用案例：</strong><br>
                 <ul>
@@ -78,7 +99,7 @@
                 </ul>
             </p>
             <p><strong>结构示意：</strong><br>
-                <span style="font-family:monospace;">输入 → [二值卷积+HardTanh] × N → 展平 → [二值全连接+HardTanh] × M → 输出</span>
+                <span style=\"font-family:monospace;\">输入 → [二值卷积+HardTanh] × N → 展平 → [二值全连接+HardTanh] × M → 输出</span>
             </p>
             `
         },
@@ -86,6 +107,8 @@
             icon: '⚡',
             title: '训练优化策略',
             desc: `
+            <img class=\"feature-img\" src=\"images/binarynet-training.png\" alt=\"BNN训练流程示意\">
+            <div class=\"img-caption\">图：BNN训练与优化流程（本地图片）</div>
             <p><strong>优化方法：</strong><br>
             采用Adam优化器，兼顾收敛速度和稳定性。损失函数选用交叉熵，适合多分类任务。训练过程中每个epoch后进行测试，实时监控模型性能。</p>
             <ul>
@@ -94,9 +117,9 @@
                 <li>分布重塑、比例因子等提升精度</li>
             </ul>
             <p><strong>经典论文与资料：</strong><br>
-                <a href="https://arxiv.org/abs/1904.02823" target="_blank">IR-Net: Improving Binarized Neural Networks</a> &nbsp;|&nbsp;
-                <a href="https://arxiv.org/abs/1512.03385" target="_blank">Distilling the Knowledge in a Neural Network</a> &nbsp;|&nbsp;
-                <a href="https://pytorch.org/docs/stable/optim.html" target="_blank">PyTorch官方优化器文档</a>
+                <a href=\"https://arxiv.org/abs/1904.02823\" target=\"_blank\">IR-Net: Improving Binarized Neural Networks</a> &nbsp;|&nbsp;
+                <a href=\"https://arxiv.org/abs/1512.03385\" target=\"_blank\">Distilling the Knowledge in a Neural Network</a> &nbsp;|&nbsp;
+                <a href=\"https://pytorch.org/docs/stable/optim.html\" target=\"_blank\">PyTorch官方优化器文档</a>
             </p>
             <p><strong>应用案例：</strong><br>
                 <ul>
@@ -110,6 +133,8 @@
             icon: '🚀',
             title: '硬件加速支持',
             desc: `
+            <img class=\"feature-img\" src=\"images/binarynet-hardware.png\" alt=\"BNN硬件加速示意\">
+            <div class=\"img-caption\">图：BNN在FPGA/NPU等硬件上的加速原理（本地图片）</div>
             <p><strong>加速原理：</strong><br>
             BNN模型自动检测CUDA设备，优先使用GPU加速。二值化参数可通过位运算（如XNOR、bitcount）实现高效推理，理论上可达58倍加速。</p>
             <ul>
@@ -118,9 +143,9 @@
                 <li>ONNX/TorchScript导出便于跨平台部署</li>
             </ul>
             <p><strong>经典论文与资料：</strong><br>
-                <a href="https://arxiv.org/abs/1603.05279" target="_blank">XNOR-Net: ImageNet Classification Using Binary Convolutional Neural Networks</a> &nbsp;|&nbsp;
-                <a href="https://onnxruntime.ai/" target="_blank">ONNX Runtime</a> &nbsp;|&nbsp;
-                <a href="https://pytorch.org/docs/stable/jit.html" target="_blank">TorchScript官方文档</a>
+                <a href=\"https://arxiv.org/abs/1603.05279\" target=\"_blank\">XNOR-Net: ImageNet Classification Using Binary Convolutional Neural Networks</a> &nbsp;|&nbsp;
+                <a href=\"https://onnxruntime.ai/\" target=\"_blank\">ONNX Runtime</a> &nbsp;|&nbsp;
+                <a href=\"https://pytorch.org/docs/stable/jit.html\" target=\"_blank\">TorchScript官方文档</a>
             </p>
             <p><strong>应用案例：</strong><br>
                 <ul>
@@ -128,15 +153,14 @@
                     <li>FPGA加速的实时视频分析</li>
                 </ul>
             </p>
-            <p><strong>加速示意：</strong><br>
-                <span style="font-family:monospace;">二值输入 ⊕ 二值权重 → bitcount → 累加 → 输出</span>
-            </p>
             `
         },
         performance: {
             icon: '📊',
             title: '性能表现',
             desc: `
+            <img class=\"feature-img\" src=\"images/binarynet-compression.png\" alt=\"BNN性能对比图\">
+            <div class=\"img-caption\">图：BNN与浮点模型在体积和速度上的对比（本地图片）</div>
             <p><strong>实验结果：</strong><br>
             在MNIST数据集上，BNN可实现约95%的测试准确率，模型大小仅为原始浮点模型的1/32，推理速度大幅提升。</p>
             <ul>
@@ -145,8 +169,8 @@
                 <li>推理速度提升10~50倍</li>
             </ul>
             <p><strong>经典论文与资料：</strong><br>
-                <a href="https://arxiv.org/abs/1603.05279" target="_blank">XNOR-Net论文</a> &nbsp;|&nbsp;
-                <a href="https://paperswithcode.com/task/binarized-neural-networks" target="_blank">Papers With Code: Binarized Neural Networks</a>
+                <a href=\"https://arxiv.org/abs/1603.05279\" target=\"_blank\">XNOR-Net论文</a> &nbsp;|&nbsp;
+                <a href=\"https://paperswithcode.com/task/binarized-neural-networks\" target=\"_blank\">Papers With Code: Binarized Neural Networks</a>
             </p>
             <p><strong>应用案例：</strong><br>
                 <ul>
@@ -155,7 +179,7 @@
                 </ul>
             </p>
             <p><strong>性能对比图示：</strong><br>
-                <span style="font-family:monospace;">浮点模型(32MB) → <b>BNN(1MB)</b>，推理速度提升数十倍</span>
+                <span style=\"font-family:monospace;\">浮点模型(32MB) → <b>BNN(1MB)</b>，推理速度提升数十倍</span>
             </p>
             `
         }
@@ -168,9 +192,9 @@
     const feature = getQueryParam('feature');
     const content = featureMap[feature] || { title: '未知功能', desc: '<p>未找到对应的功能解释。</p>', icon: '❓' };
     document.getElementById('feature-content').innerHTML = `
-        <div class="icon">${content.icon}</div>
+        <div class=\"icon\">${content.icon}</div>
         <h1>${content.title}</h1>
-        <div class="desc">${content.desc}</div>
+        <div class=\"desc\">${content.desc}</div>
     `;
     </script>
 </body>
